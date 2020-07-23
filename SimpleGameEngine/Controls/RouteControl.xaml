@@ -1,0 +1,42 @@
+﻿<UserControl x:Class="SimpleGameEngine.Controls.RouteControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:SimpleGameEngine.Controls"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+
+        <DataTemplate x:Key="ListItemTemplate">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Name}"/>
+                <Button Grid.Column="1" Content="X" Click="RemoveItemClick" VerticalAlignment="Center"
+                        Tag="{Binding Path=(ItemsControl.AlternationIndex), 
+                RelativeSource={RelativeSource TemplatedParent}}"/>
+            </Grid>
+        </DataTemplate>
+        
+    </UserControl.Resources>
+    
+    
+    <StackPanel>
+        <CheckBox x:Name="IsLoopChkbx" Content="Is loop"/>
+        <Expander x:Name="PointsExp" IsExpanded="True"
+                  AllowDrop="True" Drop="ItemDrop">
+            <ItemsControl x:Name="PointsList" ItemTemplate="{StaticResource ListItemTemplate}"
+                          AlternationCount="100">
+                
+            </ItemsControl>
+            <!-- <ListView x:Name="PointsList"  -->
+            <!--           Background="Transparent"  -->
+            <!--           BorderThickness="0"  -->
+            <!--           ItemTemplate="{StaticResource ListItemTemplate}"/> -->
+
+        </Expander>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,256 @@
+﻿<UserControl x:Class="SimpleGameEngine.EditorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:SimpleGameEngine"
+             xmlns:controls="clr-namespace:SimpleGameEngine.Controls"
+             mc:Ignorable="d" Background="WhiteSmoke"
+             d:DesignWidth="800" d:DesignHeight="600"
+             MinWidth="1280" MinHeight="720">
+    <UserControl.DataContext>
+        <local:EditorViewModel/>
+    </UserControl.DataContext>
+    
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <SolidColorBrush x:Key="SplitterColor" Color="Gray"/>
+
+
+        <ControlTemplate x:Key="StartIcon">
+            <Viewbox Width="30" Height="20">
+                <Path Stroke="Black" StrokeThickness="1" Data="M 1,1, 25,12, 1,25Z">
+                    <Path.Style>
+                        <Style TargetType="Path">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Fill" Value="Lime"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="False">
+                                    <Setter Property="Fill" Value="Green"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Path.Style>
+                </Path>
+            </Viewbox>
+        </ControlTemplate>
+
+        <ControlTemplate x:Key="PauseIcon">
+            <Viewbox Width="30" Height="20">
+                <Path Stroke="Black" StrokeThickness="1" Data="M 1,1, 10,1, 10,25, 1,25Z M 15,1, 25,1, 25,25, 15,25Z">
+                    <Path.Style>
+                        <Style TargetType="Path">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Fill" Value="LightGray"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="False">
+                                    <Setter Property="Fill" Value="Gray"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Path.Style>
+                </Path>
+            </Viewbox>
+        </ControlTemplate>
+
+        <ControlTemplate x:Key="StopIcon">
+            <Viewbox Width="30" Height="20">
+                <Path Stroke="Black" StrokeThickness="1" Data="M 1,1, 25,1, 25,25, 1,25Z">
+                    <Path.Style>
+                        <Style TargetType="Path">
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Fill" Value="Red"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="False">
+                                    <Setter Property="Fill" Value="DarkRed"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Path.Style>
+                </Path>
+            </Viewbox>
+        </ControlTemplate>
+
+
+        <DataTemplate x:Key="BehaviourTemplate">
+            <Label Content="{Binding Name}" MouseRightButtonDown="RemoveBehaviour"/>
+        </DataTemplate>
+        
+        <HierarchicalDataTemplate x:Key="SceneObjTemplate" 
+                                  ItemsSource="{Binding Behaviours}"
+                                  ItemTemplate="{StaticResource BehaviourTemplate}">
+            <Label Content="{Binding Name}" DataContext="{Binding}"
+                   MouseRightButtonDown="RemoveSceneObject"
+                   AllowDrop="True" PreviewDrop="SceneObjects_Drop"
+                   PreviewMouseLeftButtonDown="SceneObject_Drag"/>
+        </HierarchicalDataTemplate>
+
+        <HierarchicalDataTemplate x:Key="SceneTemplate" 
+                                  ItemsSource="{Binding Objects}"
+                                  ItemTemplate="{StaticResource SceneObjTemplate}">
+            <Label Content="{Binding Name}" DataContext="{Binding}"/>
+        </HierarchicalDataTemplate>
+
+    </UserControl.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        
+        <Menu>
+            <MenuItem Header="File">
+                <MenuItem Header="Create new scene" Command="{Binding CreateNewSceneCommand}"/>
+                <MenuItem Header="Open scene" Command="{Binding OpenSceneCommand}"/>
+                <MenuItem Header="Save scene" Command="{Binding SaveSceneCommand}"/>
+            </MenuItem>
+            <MenuItem Header="Window">
+                <MenuItem Name="GameMenu" Header="Game" IsCheckable="True" IsChecked="True"/>
+                <MenuItem Name="SceneMenu" Header="Scene" IsCheckable="True"  IsChecked="True"/>
+                <MenuItem Name="AnimatorMenu" Header="Animator" IsCheckable="True" IsChecked="False"/>
+            </MenuItem>
+        </Menu>
+
+        <Grid Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition MinHeight="150" Height="*"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition MinHeight="150" Height="Auto" MaxHeight="300"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MinWidth="150" Width="*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition MinWidth="150" Width="Auto" MaxWidth="500"/>
+            </Grid.ColumnDefinitions>
+
+            <GridSplitter Grid.Row="1" Height="5" ShowsPreview="False" 
+                          Background="{StaticResource SplitterColor}"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            <GridSplitter Grid.Column="1" Grid.RowSpan="3" Width="5" ShowsPreview="False"
+                          Background="{StaticResource SplitterColor}"
+                          VerticalAlignment="Stretch" HorizontalAlignment="Center"/>
+
+            <Grid MinHeight="150">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition MinWidth="150" Width="Auto" MaxWidth="500"/>
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition MinWidth="150" Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <GridSplitter Grid.Column="1" Grid.RowSpan="3" Width="5" ShowsPreview="False"
+                              Background="{StaticResource SplitterColor}"
+                              VerticalAlignment="Stretch" HorizontalAlignment="Center"/>
+
+                <!--Browser tab control-->
+                <TabControl>
+                    <TabControl.Resources>
+                        <Style x:Key="DragDropStyle" TargetType="ListViewItem">
+                            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="PreviewListItemLeftBtnDown"/>
+                        </Style>
+                    </TabControl.Resources>
+                    <TabItem Header="Scene objects">
+                        <ListView ItemsSource="{Binding SceneObjectTypes}"
+                                  ItemContainerStyle="{StaticResource DragDropStyle}"
+                                  DisplayMemberPath="Name"/>
+                    </TabItem>
+                    <TabItem Header="Behaviours">
+                        <ListView ItemsSource="{Binding BehaviourTypes}"
+                                  ItemContainerStyle="{StaticResource DragDropStyle}"
+                                  DisplayMemberPath="Name"/>
+                    </TabItem>
+                </TabControl>
+
+                <!--Main tab control-->
+                <TabControl Grid.Column="2" MinWidth="150" SelectedIndex="1">
+                    <TabItem Header="Game"
+                             Visibility="{Binding ElementName=GameMenu, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button Template="{StaticResource StartIcon}" Margin="5" Command="{Binding StartGameCommand}"/>
+                                <Button Template="{StaticResource PauseIcon}" Margin="5" Command="{Binding PauseGameCommand}"/>
+                                <Button Template="{StaticResource StopIcon}" Margin="5" Command="{Binding StopGameCommand}"/>
+                            </StackPanel>
+
+                            <Border Grid.Row="1" BorderBrush="Black" BorderThickness="1">
+                                <Viewbox>
+                                    <Canvas x:Name="GameSceneCanvas" Background="White" 
+                                        AllowDrop="True" Drop="MainSceneDrop"/>
+                                </Viewbox>
+                            </Border>
+                        </Grid>
+                    </TabItem>
+                    <TabItem Header="Scene"
+                             Visibility="{Binding ElementName=SceneMenu, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <Border BorderBrush="Black" BorderThickness="1">
+                            <Viewbox>
+                                <Canvas x:Name="EditorSceneCanvas" Background="White" 
+                                        AllowDrop="True" Drop="MainSceneDrop"/>
+                            </Viewbox>
+                        </Border>
+                    </TabItem>
+                    <TabItem Header="Animator"
+                             Visibility="{Binding ElementName=AnimatorMenu, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}">
+
+                    </TabItem>
+                </TabControl>
+            </Grid>
+
+
+
+            <Grid RowSpan="3" Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition MinHeight="150"/>
+                    <RowDefinition Height="5"/>
+                    <RowDefinition MinHeight="150"/>
+                </Grid.RowDefinitions>
+
+                <GridSplitter Grid.Row="1" Height="5" Background="{StaticResource SplitterColor}" ShowsPreview="False"
+                              HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+
+                <!--Scene inspector-->
+                <DockPanel>
+                    <Label DockPanel.Dock="Top" Content="Scene inspector"/>
+                    <controls:RootTreeView x:Name="SceneObjects"
+                              Root="{Binding EditorScene}" RefreshTriggerName="Objects"
+                              ItemTemplate="{StaticResource SceneTemplate}"
+                              SelectedItemChanged="SceneObjects_SelectedItemChanged">
+                        
+                    </controls:RootTreeView>
+                </DockPanel>
+
+                <!--Properties-->
+                <DockPanel Grid.Row="2">
+                    <Label DockPanel.Dock="Top" Content="Properties"/>
+                    <controls:PropertiesControl x:Name="PropertyControl" UpdateAction="{Binding UpdateSceneAction}"/>
+                </DockPanel>
+            </Grid>
+
+            <!-- Log output -->
+            <DockPanel Grid.Row="2" MinHeight="150" MaxHeight="300">
+                <Label DockPanel.Dock="Top" Content="Logs"/>
+                <ListBox x:Name="LogList" Focusable="False" 
+                 ScrollViewer.VerticalScrollBarVisibility="Auto">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate>
+                                        <TextBlock Text="{Binding}"/>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </DockPanel>
+        </Grid>
+    </Grid>
+</UserControl>
